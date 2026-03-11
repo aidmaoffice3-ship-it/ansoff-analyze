@@ -359,10 +359,14 @@ function renderSales(d){
       <div class="sqcard-head">
         <div>
           <div class="sqcard-label" style="color:${q.accent}">${q.label}</div>
-          <div class="sqcard-title">${qd.title}</div>
           <div class="sqcard-subtitle">${qd.subtitle}</div>
         </div>
       </div>
+      ${(qd.proposals||[]).map(p=>`
+      <div class="sqcard-section" style="border-color:${q.accent}40;background:${q.accent}0d">
+        <div class="sqcard-section-label" style="color:${q.accent}">📋 ${p.name||""}</div>
+        <div class="sqcard-section-content">${p.overview||""}</div>
+      </div>`).join("")}
       <div class="sqcard-section">
         <div class="sqcard-section-label" style="color:${q.accent}">📞 営業手法</div>
         <div class="method-tags">${methods}</div>
@@ -378,12 +382,7 @@ function renderSales(d){
       <div class="sqcard-section">
         <div class="sqcard-section-label" style="color:${q.accent}">✅ 具体的アクション</div>
         <ul style="padding-left:16px;font-size:11px;color:rgba(203,213,225,0.85);line-height:1.75">${actions}</ul>
-      </div>
-      ${(qd.proposals||[]).map(p=>`
-      <div class="sqcard-section" style="border-color:${q.accent}30;background:${q.accent}08">
-        <div class="sqcard-section-label" style="color:${q.accent}">📋 企画案：${p.name||""}</div>
-        <div class="sqcard-section-content">${p.overview||""}</div>
-      </div>`).join("")}`;
+      </div>`;
     grid.appendChild(card);
   });
   document.getElementById("sRecText").textContent=d.overallRecommendation;
