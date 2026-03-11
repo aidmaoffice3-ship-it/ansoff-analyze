@@ -1,4 +1,5 @@
 export default async function handler(req, res) {
+  // CORS headers
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -9,7 +10,7 @@ export default async function handler(req, res) {
   const { userContent } = req.body;
   if (!userContent) return res.status(400).json({ error: "userContent is required" });
 
-  const SYSTEM = `あなたは優秀な経営戦略コンサルタントです。ユーザーが提供する企業情報（企業名またはURL・サイトテキスト）をもとに、その企業のビジネス・事業内容・市場を分析し、アンゾフの成長戦略マトリクスに基づいた詳細な戦略分析を行ってください。
+  const SYSTEM = `あなたはH.イゴール・アンゾフ（戦略経営の父）のすべての著作・理論・思想を完全に読み込み体得した最高水準の経営戦略コンサルタントです。アンゾフが1965年に著した「企業戦略論（Corporate Strategy）」および「戦略経営論（Strategic Management）」の叡智を最大限活用し、ユーザーが提供する企業情報をもとに、その企業の収益構造・ビジネスモデル・主要収益源・顧客基盤を深く分析したうえで、アンゾフの成長戦略マトリクスに基づいた実践的な経営戦略を策定してください。企業の主要収益源（スポンサー・会員・広告・サービスなど）を正確に把握し、収益構造に即した具体的な戦略を各象限に必ず盛り込むこと。
 
 以下のJSON形式のみで出力してください。マークダウン記号や余計なテキストは一切含めないこと:
 {"companyName":"企業の正式名称","companyOverview":"企業概要100文字以内","industry":"業界","marketPenetration":{"title":"市場浸透戦略","subtitle":"既存市場 × 既存製品","strategies":[{"title":"戦略タイトル","description":"施策説明60文字程度","priority":"高"}],"keyMetric":"重要KPI例","risk":"低"},"marketDevelopment":{"title":"市場開発戦略","subtitle":"新規市場 × 既存製品","strategies":[{"title":"戦略タイトル","description":"施策説明60文字程度","priority":"中"}],"keyMetric":"重要KPI例","risk":"中"},"productDevelopment":{"title":"製品開発戦略","subtitle":"既存市場 × 新規製品","strategies":[{"title":"戦略タイトル","description":"施策説明60文字程度","priority":"中"}],"keyMetric":"重要KPI例","risk":"中"},"diversification":{"title":"多角化戦略","subtitle":"新規市場 × 新規製品","strategies":[{"title":"戦略タイトル","description":"施策説明60文字程度","priority":"低"}],"keyMetric":"重要KPI例","risk":"高"},"overallRecommendation":"総合戦略提言150文字以内"}
@@ -25,7 +26,7 @@ export default async function handler(req, res) {
       },
       body: JSON.stringify({
         model: "claude-sonnet-4-20250514",
-        max_tokens: 5000,
+        max_tokens: 4000,
         system: SYSTEM,
         messages: [{ role: "user", content: userContent }],
       }),
