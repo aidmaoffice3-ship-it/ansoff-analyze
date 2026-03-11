@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>アンゾフ成長戦略マトリクス 分析ツール</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=DM+Mono:wght@500&display=swap');
+  :root {
+    --bg:#04091a; --surface:rgba(10,20,50,0.72); --border:rgba(255,255,255,0.08);
+    --text:#e8eef8; --muted:rgba(148,163,184,0.6); --accent:#6c7ef8;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    min-height:100vh; background:var(--bg);
+    background-image:
+      radial-gradient(ellipse 80% 60% at 20% 10%,rgba(99,102,241,0.12) 0%,transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 80%,rgba(52,211,153,0.07) 0%,transparent 50%),
+      linear-gradient(180deg,#04091a 0%,#080f28 100%);
+    font-family:'Noto Sans JP','Helvetica Neue',sans-serif;
+    color:var(--text); padding:44px 20px 80px;
+  }
+  body::before{
+    content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px);
+    background-size:44px 44px;
+  }
+  .wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;}
+  .header{text-align:center;margin-bottom:42px;}
+  .eyebrow{
+    display:inline-block; font-family:'DM Mono',monospace;
+    font-size:10px; letter-spacing:0.34em; font-weight:500;
+    color:var(--accent); margin-bottom:14px;
+    background:rgba(108,126,248,0.1); padding:5px 16px;
+    border-radius:999px; border:1px solid rgba(108,126,248,0.24);
+  }
+  h1{
+    font-size:clamp(24px,4.5vw,44px); font-weight:900; letter-spacing:-0.025em;
+    background:linear-gradient(128deg,#e8eef8 20%,#818cf8 80%);
+    -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:10px;
+  }
+  .sub{color:var(--muted);font-size:13px;}
+  .input-row{display:flex;gap:10px;max-width:600px;margin:0 auto 10px;}
+  input[type=text]{
+    flex:1; padding:14px 18px; border-radius:11px; font-size:14px;
+    background:rgba(255,255,255,0.055); border:1px solid rgba(255,255,255,0.11);
+    color:var(--text); outline:none; font-family:inherit;
+    transition:border-color 0.2s,box-shadow 0.2s;
+  }
+  input[type=text]:focus{border-color:rgba(108,126,248,0.55);box-shadow:0 0 0 3px rgba(108,126,248,0.1);}
+  input::placeholder{color:rgba(148,163,184,0.35);}
+  .hint{text-align:center;font-size:11px;color:rgba(148,163,184,0.4);margin-bottom:40px;}
+  .btn{
+    padding:14px 28px; border-radius:11px; font-size:13px; font-weight:700;
+    background:linear-gradient(135deg,#5b5fef,#8b5cf6);
+    border:none; color:#fff; cursor:pointer; white-space:nowrap;
+    box-shadow:0 4px 22px rgba(91,95,239,0.45);
+    transition:opacity 0.2s; font-family:inherit;
+  }
+  .btn:hover:not(:disabled){opacity:0.88;}
+  .btn:disabled{background:rgba(108,126,248,0.25);box-shadow:none;cursor:not-allowed;}
+  .loading{display:none;text-align:center;padding:64px 0;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+  .spinner{
+    width:46px;height:46px;border-radius:50%;
+    border:3px solid rgba(108,126,248,0.18);border-top-color:var(--accent);
+    animation:spin 0.75s linear infinite;margin:0 auto 18px;
+  }
+  .loading p{color:var(--muted);font-size:13px;}
+  .error{display:none;text-align:center;color:#ef4444;font-size:12px;padding:16px;line-height:1.6;}
+  .result{display:none;}
+  .company-card{text-align:center;margin-bottom:32px;animation:fadeUp 0.5s ease both;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+  .co-name{font-size:22px;font-weight:900;color:#f1f5f9;margin-bottom:5px;}
+  .co-industry{font-size:11px;color:var(--accent);letter-spacing:0.12em;margin-bottom:8px;font-family:'DM Mono',monospace;}
+  .co-overview{font-size:12.5px;color:var(--muted);max-width:480px;margin:0 auto;line-height:1.7;}
+  .axis-x{display:flex;justify-content:space-between;padding:0 8px;margin-bottom:6px;}
+  .axis-x span{font-size:10px;color:rgba(148,163,184,0.3);font-family:'DM Mono',monospace;}
+  .matrix-wrap{display:flex;align-items:stretch;}
+  .axis-y{display:flex;flex-direction:column;justify-content:space-around;padding-right:10px;min-width:42px;}
+  .axis-y span{font-size:9px;color:rgba(148,163,184,0.3);writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;font-family:'DM Mono',monospace;}
+  .matrix-grid{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+  .qcard{
+    background:var(--surface);border:1px solid var(--border);
+    border-radius:14px;padding:20px;backdrop-filter:blur(18px);
+    display:flex;flex-direction:column;gap:11px;
+    opacity:0;transform:translateY(16px);
+    transition:opacity 0.42s ease,transform 0.42s ease;
+  }
+  .qcard.show{opacity:1;transform:translateY(0);}
+  .qcard:hover{border-color:rgba(255,255,255,0.14);}
+  .qcard-top{display:flex;justify-content:space-between;align-items:flex-start;}
+  .qcard-label{font-size:10px;font-weight:800;letter-spacing:0.18em;margin-bottom:4px;font-family:'DM Mono',monospace;}
+  .qcard-title{font-size:14px;font-weight:700;color:#f1f5f9;}
+  .qcard-subtitle{font-size:11px;color:var(--muted);margin-top:2px;}
+  .risk-tag{font-size:10px;padding:3px 9px;border-radius:999px;font-weight:700;white-space:nowrap;margin-left:8px;margin-top:2px;}
+  .strategies{display:flex;flex-direction:column;gap:7px;}
+  .strat{background:rgba(255,255,255,0.028);border:1px solid rgba(255,255,255,0.065);border-radius:9px;padding:10px 12px;}
+  .strat-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+  .strat-title{font-size:12px;font-weight:700;color:#dde4f0;}
+  .pri-tag{font-size:9px;padding:2px 7px;border-radius:999px;font-weight:800;margin-left:6px;}
+  .strat-desc{font-size:11px;color:rgba(148,163,184,0.88);line-height:1.62;}
+  .kpi{padding:8px 12px;border-radius:8px;font-size:11px;color:rgba(203,213,225,0.84);border-left-width:2px;border-left-style:solid;}
+  .kpi strong{font-weight:700;}
+  .rec{margin-top:18px;padding:20px 24px;border-radius:13px;background:rgba(99,102,241,0.07);border:1px solid rgba(99,102,241,0.2);opacity:0;transition:opacity 0.5s ease 0.35s;}
+  .rec.show{opacity:1;}
+  .rec-label{font-size:10px;font-weight:800;color:var(--accent);letter-spacing:0.2em;margin-bottom:8px;font-family:'DM Mono',monospace;}
+  .rec-text{font-size:13px;color:rgba(203,213,225,0.9);line-height:1.9;}
+  @media(max-width:640px){.matrix-grid{grid-template-columns:1fr;}.axis-y{display:none;}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <div class="eyebrow">STRATEGIC GROWTH ANALYSIS</div>
+    <h1>アンゾフ成長戦略マトリクス</h1>
+    <p class="sub">企業のURLまたは企業名を入力して、AIによる四象限戦略分析を生成します</p>
+  </div>
+
+  <div class="input-row">
+    <input type="text" id="inp" placeholder="例：https://toyota.jp　または　トヨタ自動車" />
+    <button class="btn" id="btn" onclick="analyze()">分析する</button>
+  </div>
+  <p class="hint">URLまたは企業名どちらでも入力できます</p>
+
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p id="loadingMsg">分析中...</p>
+  </div>
+  <div class="error" id="error"></div>
+
+  <div class="result" id="result">
+    <div class="company-card">
+      <div class="co-name" id="coName"></div>
+      <div class="co-industry" id="coIndustry"></div>
+      <div class="co-overview" id="coOverview"></div>
+    </div>
+    <div class="axis-x"><span>← 既存市場</span><span>新規市場 →</span></div>
+    <div class="matrix-wrap">
+      <div class="axis-y"><span>新規製品 ↑</span><span>↓ 既存製品</span></div>
+      <div class="matrix-grid" id="grid"></div>
+    </div>
+    <div class="rec" id="rec">
+      <div class="rec-label">▸ 総合戦略提言</div>
+      <div class="rec-text" id="recText"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const QUADS=[
+  {key:"marketDevelopment",label:"③ 市場開発戦略",accent:"#34d399"},
+  {key:"diversification",label:"④ 多角化戦略",accent:"#fb923c"},
+  {key:"marketPenetration",label:"① 市場浸透戦略",accent:"#38bdf8"},
+  {key:"productDevelopment",label:"② 製品開発戦略",accent:"#a78bfa"},
+];
+function priStyle(p){
+  if(p==="高")return"background:rgba(239,68,68,0.16);color:#ef4444;border:1px solid rgba(239,68,68,0.32)";
+  if(p==="中")return"background:rgba(251,191,36,0.16);color:#f59e0b;border:1px solid rgba(251,191,36,0.32)";
+  return"background:rgba(34,197,94,0.16);color:#22c55e;border:1px solid rgba(34,197,94,0.32)";
+}
+function riskColor(r){return r==="高"?"#ef4444":r==="中"?"#f59e0b":"#22c55e";}
+function isValidUrl(s){try{new URL(s);return true;}catch{return false;}}
+function showError(msg){const el=document.getElementById("error");el.textContent=msg;el.style.display="block";}
+
+document.getElementById("inp").addEventListener("keydown",e=>{if(e.key==="Enter")analyze();});
+
+async function fetchSiteText(url){
+  try{
+    const proxy="https://api.allorigins.win/get?url="+encodeURIComponent(url);
+    const r=await fetch(proxy,{signal:AbortSignal.timeout(8000)});
+    const data=await r.json();
+    if(!data.contents)return null;
+    return data.contents.replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim().slice(0,3000);
+  }catch{return null;}
+}
+
+async function analyze(){
+  const input=document.getElementById("inp").value.trim();
+  if(!input)return;
+  const btn=document.getElementById("btn");
+  btn.disabled=true;
+  document.getElementById("error").style.display="none";
+  document.getElementById("result").style.display="none";
+  const loading=document.getElementById("loading");
+  const loadingMsg=document.getElementById("loadingMsg");
+  loading.style.display="block";
+
+  let userContent="";
+  if(isValidUrl(input)){
+    loadingMsg.textContent="サイト情報を取得中...";
+    const siteText=await fetchSiteText(input);
+    if(siteText){
+      userContent="URL: "+input+"\n\nサイトから取得したテキスト:\n"+siteText;
+      loadingMsg.textContent="戦略を分析中...";
+    }else{
+      userContent="URL: "+input+"\n\nサイト情報の取得に失敗したため、URLのドメイン名や企業の知識から分析してください。";
+      loadingMsg.textContent="URLから企業を特定して分析中...";
+    }
+  }else{
+    loadingMsg.textContent=input+" の戦略を分析中...";
+    userContent="企業名: "+input;
+  }
+
+  try{
+    const res=await fetch("/api/analyze",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({userContent})
+    });
+    const d=await res.json();
+    if(d.error)throw new Error(d.error);
+    render(d);
+  }catch(e){
+    showError("分析に失敗しました: "+e.message);
+  }finally{
+    loading.style.display="none";
+    btn.disabled=false;
+  }
+}
+
+function render(d){
+  document.getElementById("coName").textContent=d.companyName;
+  document.getElementById("coIndustry").textContent=d.industry;
+  document.getElementById("coOverview").textContent=d.companyOverview;
+  const grid=document.getElementById("grid");
+  grid.innerHTML="";
+  QUADS.forEach((q,i)=>{
+    const qd=d[q.key];if(!qd)return;
+    const rc=riskColor(qd.risk);
+    const card=document.createElement("div");
+    card.className="qcard";
+    card.style.transitionDelay=(i*75)+"ms";
+    card.style.borderColor=q.accent+"28";
+    card.innerHTML=`
+      <div class="qcard-top">
+        <div>
+          <div class="qcard-label" style="color:${q.accent}">${q.label}</div>
+          <div class="qcard-title">${qd.title}</div>
+          <div class="qcard-subtitle">${qd.subtitle}</div>
+        </div>
+        <div class="risk-tag" style="background:${rc}20;color:${rc};border:1px solid ${rc}40">リスク ${qd.risk}</div>
+      </div>
+      <div class="strategies">
+        ${qd.strategies.map(s=>`
+          <div class="strat">
+            <div class="strat-top">
+              <span class="strat-title">${s.title}</span>
+              <span class="pri-tag" style="${priStyle(s.priority)}">${s.priority}</span>
+            </div>
+            <div class="strat-desc">${s.description}</div>
+          </div>`).join("")}
+      </div>
+      <div class="kpi" style="background:${q.accent}10;border-left-color:${q.accent}">
+        <strong style="color:${q.accent}">KPI: </strong>${qd.keyMetric}
+      </div>`;
+    grid.appendChild(card);
+  });
+  document.getElementById("recText").textContent=d.overallRecommendation;
+  document.getElementById("result").style.display="block";
+  setTimeout(()=>{
+    document.querySelectorAll(".qcard").forEach(c=>c.classList.add("show"));
+    document.getElementById("rec").classList.add("show");
+  },60);
+}
+</script>
+</body>
+</html>
