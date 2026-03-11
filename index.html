@@ -297,7 +297,8 @@ ${siteText}
     "salesMethods": ["電話", "メール", "問い合わせフォーム"],
     "targetSegment": "ターゲット詳細（エリア・業種・従業員数・売上規模・担当者など具体的に）",
     "approach": "切り口の詳細（売上向上訴求・コストダウン訴求・ブランディング向上訴求・業務効率化訴求など複数の角度から具体的に）",
-    "keyActions": ["具体的なアクション1", "具体的なアクション2", "具体的なアクション3"]
+    "keyActions": ["具体的なアクション1", "具体的なアクション2", "具体的なアクション3"],
+    "proposals": [{"name": "企画名（例：既存顧客深耕キャンペーン）", "overview": "企画の概要200文字以内"}, {"name": "企画名2", "overview": "企画概要2"}]
   },
   "productDevelopment": {
     "title": "② 製品開発",
@@ -307,7 +308,8 @@ ${siteText}
     "salesMethods": ["SNS", "LP", "交流会"],
     "targetSegment": "ターゲット詳細",
     "approach": "切り口の詳細",
-    "keyActions": ["アクション1", "アクション2", "アクション3"]
+    "keyActions": ["アクション1", "アクション2", "アクション3"],
+    "proposals": [{"name": "企画名（例：新サービス発表セミナー）", "overview": "企画概要200文字以内"}, {"name": "企画名2", "overview": "企画概要2"}]
   },
   "marketDevelopment": {
     "title": "③ 市場開発",
@@ -317,7 +319,8 @@ ${siteText}
     "salesMethods": ["郵送DM", "手紙", "FAX"],
     "targetSegment": "ターゲット詳細",
     "approach": "切り口の詳細",
-    "keyActions": ["アクション1", "アクション2", "アクション3"]
+    "keyActions": ["アクション1", "アクション2", "アクション3"],
+    "proposals": [{"name": "企画名（例：スポンサー開拓企画）", "overview": "企画概要200文字以内"}, {"name": "企画名2", "overview": "企画概要2"}]
   },
   "diversification": {
     "title": "④ 多角化",
@@ -327,7 +330,8 @@ ${siteText}
     "salesMethods": ["交流会", "LP", "SNS"],
     "targetSegment": "ターゲット詳細",
     "approach": "切り口の詳細",
-    "keyActions": ["アクション1", "アクション2", "アクション3"]
+    "keyActions": ["アクション1", "アクション2", "アクション3"],
+    "proposals": [{"name": "企画名（例：有料ファンクラブ立ち上げ企画）", "overview": "企画概要200文字以内"}, {"name": "企画名2", "overview": "企画概要2"}]
   },
   "overallRecommendation": "営業戦略の総合提言200文字以内"
 }
@@ -374,7 +378,12 @@ function renderSales(d){
       <div class="sqcard-section">
         <div class="sqcard-section-label" style="color:${q.accent}">✅ 具体的アクション</div>
         <ul style="padding-left:16px;font-size:11px;color:rgba(203,213,225,0.85);line-height:1.75">${actions}</ul>
-      </div>`;
+      </div>
+      ${(qd.proposals||[]).map(p=>`
+      <div class="sqcard-section" style="border-color:${q.accent}30;background:${q.accent}08">
+        <div class="sqcard-section-label" style="color:${q.accent}">📋 企画案：${p.name||""}</div>
+        <div class="sqcard-section-content">${p.overview||""}</div>
+      </div>`).join("")}`;
     grid.appendChild(card);
   });
   document.getElementById("sRecText").textContent=d.overallRecommendation;
