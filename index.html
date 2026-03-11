@@ -597,12 +597,14 @@ async function analyzeSales(){
     lmsg.textContent="営業戦略を生成中...";
   } else { lmsg.textContent=input+" の営業戦略を生成中..."; siteText="企業名: "+input; }
 
-  const prompt=`あなたは優秀な営業戦略コンサルタントです。以下の企業情報をもとに、その企業の製品・サービスを「売る側」として、アンゾフの成長戦略マトリクスに基づいた詳細な営業戦略を立案してください。
+  const prompt=`あなたはH.イゴール・アンゾフ（戦略経営の父）のすべての著作・理論・思想を完全に読み込み、体得した最高水準の経営戦略コンサルタントです。アンゾフが1965年に著した「企業戦略論（Corporate Strategy）」および「戦略経営論（Strategic Management）」の叡智を最大限に活用し、以下の企業情報をもとに、その企業の収益構造・ビジネスモデル・顧客基盤・主要収益源を深く分析したうえで、アンゾフの成長戦略マトリクスに基づいた実践的な営業戦略を立案してください。
+
+【重要】企業の主要収益源（スポンサー収益・会員収益・広告収益・サービス収益など）を正確に把握し、その収益構造に即した具体的な営業企画を各象限に必ず盛り込むこと。ウェブサイトに記載されているスポンサー企業・取引先・サービス内容・実績を精密に読み取り、業界特性を踏まえた戦略を策定すること。
 
 企業情報:
 ${siteText}
 
-情報が不足している場合は、同業種・近似業態の一般的な事例や業界知識を活用してください。HPの事例ページや実績ページも参照して分析すること。
+情報が不足している場合は、同業種・近似業態の豊富な事例と業界知識を駆使してください。
 
 以下のJSON形式のみで出力（マークダウン記号・余計なテキスト不要）:
 {
@@ -711,48 +713,103 @@ async function downloadPDF(){
   btn.textContent="⏳ 生成中..."; btn.disabled=true;
   const companyName=document.getElementById("sCoName").textContent||"営業戦略";
   const el=document.getElementById("pdfArea");
+
+  // PDF用スタイル注入
   const style=document.createElement("style");
   style.id="pdf-override";
   style.textContent=`
-    #pdfArea{background:#04091a;color:#e8eef8;padding:24px;width:1200px;}
-    .s-company-card{text-align:center;margin-bottom:20px;}
-    .s-co-name{font-size:22px;font-weight:900;color:#f1f5f9;margin-bottom:4px;}
-    .s-co-industry{font-size:11px;color:#34d399;margin-bottom:6px;}
-    .s-co-overview{font-size:12px;color:rgba(148,163,184,0.8);max-width:500px;margin:0 auto;line-height:1.6;}
-    .s-rec{background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.25);border-radius:10px;padding:16px;margin-bottom:20px;opacity:1!important;}
-    .s-rec-label{font-size:10px;font-weight:800;color:#34d399;letter-spacing:0.2em;margin-bottom:6px;}
-    .s-rec-text{font-size:12px;color:rgba(203,213,225,0.9);line-height:1.8;}
-    .sales-matrix-label{text-align:center;font-size:10px;font-weight:800;color:#34d399;letter-spacing:0.2em;margin-bottom:12px;}
-    .s-axis-x{display:flex;justify-content:space-between;padding:0 8px;margin-bottom:4px;font-size:9px;color:rgba(148,163,184,0.4);}
-    .s-matrix-wrap{display:flex;}
-    .s-axis-y{display:flex;flex-direction:column;justify-content:space-around;padding-right:8px;min-width:36px;font-size:9px;color:rgba(148,163,184,0.4);}
-    .s-axis-y span{writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;}
-    .s-matrix-grid{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-    .sqcard{background:#0a1432;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:14px;opacity:1!important;transform:none!important;}
-    .sqcard-head{margin-bottom:10px;}
-    .sqcard-label{font-size:9px;font-weight:800;letter-spacing:0.16em;margin-bottom:3px;}
-    .sqcard-subtitle{font-size:10px;color:rgba(148,163,184,0.6);}
-    .sqcard-section{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:7px;padding:8px 10px;margin-bottom:6px;}
-    .sqcard-section-label{font-size:8px;font-weight:800;letter-spacing:0.14em;margin-bottom:4px;opacity:0.8;}
-    .sqcard-section-content{font-size:10px;color:rgba(203,213,225,0.85);line-height:1.65;}
-    .method-tags{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px;}
-    .method-tag{font-size:9px;padding:2px 6px;border-radius:999px;font-weight:600;background:rgba(108,126,248,0.15);color:#818cf8;border:1px solid rgba(108,126,248,0.3);}
-    ul{padding-left:14px;font-size:10px;color:rgba(203,213,225,0.85);line-height:1.7;}
     body::before{display:none!important;}
+    body::after{display:none!important;}
+    #pdfArea{
+      background:#04091a!important;
+      color:#e8eef8!important;
+      padding:32px 36px!important;
+      width:1060px!important;
+      min-width:1060px!important;
+      max-width:1060px!important;
+      box-sizing:border-box!important;
+    }
+    .s-company-card{text-align:center;margin-bottom:18px;}
+    .s-co-name{font-size:24px;font-weight:900;color:#f1f5f9;margin-bottom:4px;}
+    .s-co-industry{font-size:11px;color:#34d399;letter-spacing:0.12em;margin-bottom:6px;}
+    .s-co-overview{font-size:12px;color:rgba(148,163,184,0.85);max-width:560px;margin:0 auto;line-height:1.65;}
+    .s-rec{background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.25);border-radius:10px;padding:16px 20px;margin-bottom:20px;opacity:1!important;}
+    .s-rec-label{font-size:9px;font-weight:800;color:#34d399;letter-spacing:0.2em;margin-bottom:6px;}
+    .s-rec-text{font-size:12px;color:rgba(203,213,225,0.9);line-height:1.8;}
+    .sales-matrix-label{text-align:center;font-size:9px;font-weight:800;color:#34d399;letter-spacing:0.2em;margin-bottom:10px;}
+    .s-axis-x{display:flex;justify-content:space-between;padding:0 8px;margin-bottom:4px;font-size:9px;color:rgba(148,163,184,0.4);}
+    .s-matrix-wrap{display:flex;align-items:stretch;}
+    .s-axis-y{display:flex;flex-direction:column;justify-content:space-around;padding-right:8px;min-width:32px;font-size:9px;color:rgba(148,163,184,0.4);}
+    .s-axis-y span{writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;}
+    .s-matrix-grid{flex:1;display:grid!important;grid-template-columns:1fr 1fr!important;gap:12px!important;width:100%!important;}
+    .sqcard{
+      background:#0a1432!important;
+      border:1px solid rgba(255,255,255,0.1)!important;
+      border-radius:10px!important;
+      padding:14px 16px!important;
+      opacity:1!important;
+      transform:none!important;
+      display:flex!important;
+      flex-direction:column!important;
+      gap:8px!important;
+      box-sizing:border-box!important;
+      break-inside:avoid!important;
+    }
+    .sqcard-head{margin-bottom:6px;}
+    .sqcard-label{font-size:9px;font-weight:800;letter-spacing:0.16em;margin-bottom:2px;}
+    .sqcard-subtitle{font-size:10px;color:rgba(148,163,184,0.6);}
+    .sqcard-section{
+      background:rgba(255,255,255,0.03)!important;
+      border:1px solid rgba(255,255,255,0.07)!important;
+      border-radius:7px!important;
+      padding:8px 10px!important;
+      margin-bottom:5px!important;
+    }
+    .sqcard-section-label{font-size:8px;font-weight:800;letter-spacing:0.14em;margin-bottom:4px;opacity:0.8;}
+    .sqcard-section-content{font-size:10px;color:rgba(203,213,225,0.85);line-height:1.6;}
+    .method-tags{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px;}
+    .method-tag{font-size:8px;padding:2px 6px;border-radius:999px;font-weight:600;background:rgba(108,126,248,0.15);color:#818cf8;border:1px solid rgba(108,126,248,0.3);}
+    ul{padding-left:14px;margin:0;font-size:10px;color:rgba(203,213,225,0.85);line-height:1.65;}
+    li{margin-bottom:2px;}
   `;
   document.head.appendChild(style);
+
+  // 幅を固定して描画
   const origStyle=el.getAttribute("style")||"";
-  el.style.width="1200px"; el.style.minWidth="1200px";
-  await new Promise(r=>setTimeout(r,100));
-  const canvas=await html2canvas(el,{scale:1.5,backgroundColor:"#04091a",useCORS:true,logging:false,scrollY:0,width:1200,windowWidth:1200});
+  el.style.cssText="width:1060px;min-width:1060px;max-width:1060px;position:relative;left:0;";
+  await new Promise(r=>setTimeout(r,200));
+
+  // 実際のコンテンツ高さを取得
+  const contentH=el.scrollHeight;
+  const contentW=1060;
+
+  const canvas=await html2canvas(el,{
+    scale:2,
+    backgroundColor:"#04091a",
+    useCORS:true,
+    logging:false,
+    scrollX:0,
+    scrollY:-window.scrollY,
+    width:contentW,
+    height:contentH,
+    windowWidth:contentW,
+    windowHeight:contentH,
+  });
+
+  // スタイル元に戻す
   el.setAttribute("style",origStyle);
   document.getElementById("pdf-override")?.remove();
-  const imgData=canvas.toDataURL("image/jpeg",0.95);
+
+  const imgData=canvas.toDataURL("image/jpeg",0.97);
   const {jsPDF}=window.jspdf;
-  const mmW=297;
-  const mmH=Math.ceil(canvas.height/canvas.width*mmW);
-  const pdf=new jsPDF({orientation:"landscape",unit:"mm",format:[mmW,mmH]});
-  pdf.addImage(imgData,"JPEG",0,0,mmW,mmH);
+
+  // A4横: 297×210mm。画像をmm換算して完全に収まるサイズのPDFを生成
+  const pxPerMm=canvas.width/297; // scaleを考慮した1mmあたりpx
+  const mmH=canvas.height/pxPerMm;
+
+  // 1ページに収まるカスタムサイズPDF（切れない）
+  const pdf=new jsPDF({orientation:"landscape",unit:"mm",format:[297,mmH]});
+  pdf.addImage(imgData,"JPEG",0,0,297,mmH,undefined,"FAST");
   pdf.save(`${companyName}_営業戦略マトリクス.pdf`);
   btn.textContent="📄 PDFでダウンロード"; btn.disabled=false;
 }
