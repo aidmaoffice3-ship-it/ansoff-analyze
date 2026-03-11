@@ -169,9 +169,9 @@
         <div class="s-co-overview" id="sCoOverview"></div>
       </div>
       <div class="sales-matrix-label">▸ ANSOFF SALES STRATEGY MATRIX</div>
-      <div class="s-axis-x"><span>← 既存市場</span><span>新規市場 →</span></div>
+      <div class="s-axis-x"><span>← 既存製品</span><span>新規製品 →</span></div>
       <div class="s-matrix-wrap">
-        <div class="s-axis-y"><span>新規製品 ↑</span><span>↓ 既存製品</span></div>
+        <div class="s-axis-y"><span>新規市場 ↑</span><span>↓ 既存市場</span></div>
         <div class="s-matrix-grid" id="sGrid"></div>
       </div>
       <div class="s-rec" id="sRec">
@@ -255,10 +255,10 @@ function renderMgmt(d){
 
 // ── 営業戦略 ──
 const S_QUADS=[
-  {key:"marketDevelopment",label:"③ 市場開発",accent:"#34d399"},
-  {key:"diversification",label:"④ 多角化",accent:"#fb923c"},
   {key:"marketPenetration",label:"① 市場浸透",accent:"#38bdf8"},
   {key:"productDevelopment",label:"② 製品開発",accent:"#a78bfa"},
+  {key:"marketDevelopment",label:"③ 市場開発",accent:"#34d399"},
+  {key:"diversification",label:"④ 多角化",accent:"#fb923c"},
 ];
 
 document.getElementById("sInp").addEventListener("keydown",e=>{if(e.key==="Enter")analyzeSales();});
