@@ -107,6 +107,8 @@
   .s-rec-text{font-size:13px;color:rgba(203,213,225,0.9);line-height:1.9;}
 
   @media(max-width:640px){.matrix-grid,.s-matrix-grid{grid-template-columns:1fr;}.axis-y,.s-axis-y{display:none;}.tab-btn{padding:10px 18px;font-size:12px;}}
+  .btn-pdf{padding:14px 40px;border-radius:11px;font-size:14px;font-weight:700;background:linear-gradient(135deg,#0f172a,#1e3a5f);border:1px solid rgba(99,179,237,0.4);color:#93c5fd;cursor:pointer;box-shadow:0 4px 20px rgba(99,179,237,0.15);transition:all 0.2s;font-family:inherit;}
+  .btn-pdf:hover{background:linear-gradient(135deg,#1e3a5f,#2563eb);color:#fff;box-shadow:0 4px 24px rgba(99,179,237,0.35);}
 </style>
 </head>
 <body>
@@ -178,10 +180,14 @@
         <div class="s-rec-label">▸ 営業戦略 総合提言</div>
         <div class="s-rec-text" id="sRecText"></div>
       </div>
+      <div style="text-align:center;margin-top:32px;">
+        <button class="btn-pdf" id="pdfBtn" onclick="downloadPDF()">📄 PDFでダウンロード</button>
+      </div>
     </div>
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script>
 function switchTab(tab){
   const isMgmt=tab==='mgmt';
@@ -391,6 +397,41 @@ function renderSales(d){
     document.querySelectorAll(".sqcard").forEach(c=>c.classList.add("show"));
     document.getElementById("sRec").classList.add("show");
   },60);
+}async function downloadPDF(){
+  const btn=document.getElementById("pdfBtn");
+  btn.textContent="⏳ 生成中...";btn.disabled=true;
+  const companyName=document.getElementById("sCoName").textContent||"営業戦略";
+  const el=document.getElementById("salesResult");
+
+  // PDF用スタイル上書き
+  const style=document.createElement("style");
+  style.id="pdf-override";
+  style.textContent=`
+    #salesResult{background:#04091a;color:#e8eef8;padding:20px;}
+    .sqcard{break-inside:avoid;page-break-inside:avoid;background:#0a1432;border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:16px;margin-bottom:12px;}
+    .sqcard-section{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 12px;margin-bottom:8px;}
+    .method-tag{background:rgba(108,126,248,0.2);color:#818cf8;border:1px solid rgba(108,126,248,0.3);border-radius:999px;padding:2px 8px;font-size:10px;margin:2px;display:inline-block;}
+    .s-matrix-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .s-rec{background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.25);border-radius:10px;padding:16px;margin-top:16px;}
+    body::before{display:none;}
+  `;
+  document.head.appendChild(style);
+
+  const opt={
+    margin:[10,10,10,10],
+    filename:`${companyName}_営業戦略マトリクス.pdf`,
+    image:{type:"jpeg",quality:0.95},
+    html2canvas:{scale:2,backgroundColor:"#04091a",useCORS:true,logging:false},
+    jsPDF:{unit:"mm",format:"a3",orientation:"landscape"},
+    pagebreak:{mode:["avoid-all","css"]}
+  };
+
+  try{
+    await html2pdf().set(opt).from(el).save();
+  }finally{
+    document.getElementById("pdf-override")?.remove();
+    btn.textContent="📄 PDFでダウンロード";btn.disabled=false;
+  }
 }
 </script>
 </body>
