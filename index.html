@@ -3,76 +3,42 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>アンゾフ成長戦略マトリクス 分析ツール</title>
+<title>戦略マトリクス 分析ツール</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&family=DM+Mono:wght@500&display=swap');
-  :root {
-    --bg:#04091a; --surface:rgba(10,20,50,0.72); --border:rgba(255,255,255,0.08);
-    --text:#e8eef8; --muted:rgba(148,163,184,0.6); --accent:#6c7ef8;
-  }
+  :root{--bg:#04091a;--surface:rgba(10,20,50,0.72);--border:rgba(255,255,255,0.08);--text:#e8eef8;--muted:rgba(148,163,184,0.6);--accent:#6c7ef8;}
   *{margin:0;padding:0;box-sizing:border-box;}
-  body{
-    min-height:100vh; background:var(--bg);
-    background-image:
-      radial-gradient(ellipse 80% 60% at 20% 10%,rgba(99,102,241,0.12) 0%,transparent 60%),
-      radial-gradient(ellipse 60% 40% at 80% 80%,rgba(52,211,153,0.07) 0%,transparent 50%),
-      linear-gradient(180deg,#04091a 0%,#080f28 100%);
-    font-family:'Noto Sans JP','Helvetica Neue',sans-serif;
-    color:var(--text); padding:44px 20px 80px;
-  }
-  body::before{
-    content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
-    background-image:
-      linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),
-      linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px);
-    background-size:44px 44px;
-  }
+  body{min-height:100vh;background:var(--bg);background-image:radial-gradient(ellipse 80% 60% at 20% 10%,rgba(99,102,241,0.12) 0%,transparent 60%),radial-gradient(ellipse 60% 40% at 80% 80%,rgba(52,211,153,0.07) 0%,transparent 50%),linear-gradient(180deg,#04091a 0%,#080f28 100%);font-family:'Noto Sans JP','Helvetica Neue',sans-serif;color:var(--text);padding:44px 20px 80px;}
+  body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:0;background-image:linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px);background-size:44px 44px;}
   .wrap{position:relative;z-index:1;max-width:1080px;margin:0 auto;}
-  .header{text-align:center;margin-bottom:42px;}
-  .eyebrow{
-    display:inline-block; font-family:'DM Mono',monospace;
-    font-size:10px; letter-spacing:0.34em; font-weight:500;
-    color:var(--accent); margin-bottom:14px;
-    background:rgba(108,126,248,0.1); padding:5px 16px;
-    border-radius:999px; border:1px solid rgba(108,126,248,0.24);
-  }
-  h1{
-    font-size:clamp(24px,4.5vw,44px); font-weight:900; letter-spacing:-0.025em;
-    background:linear-gradient(128deg,#e8eef8 20%,#818cf8 80%);
-    -webkit-background-clip:text; -webkit-text-fill-color:transparent; margin-bottom:10px;
-  }
+  .tab-bar{display:flex;gap:8px;justify-content:center;margin-bottom:40px;}
+  .tab-btn{padding:11px 36px;border-radius:999px;font-size:13px;font-weight:700;border:1px solid rgba(255,255,255,0.12);cursor:pointer;font-family:'Noto Sans JP',sans-serif;transition:all 0.22s;background:rgba(255,255,255,0.04);color:rgba(148,163,184,0.7);}
+  .tab-btn:hover{background:rgba(255,255,255,0.07);color:#fff;}
+  .tab-btn.active-mgmt{background:linear-gradient(135deg,#5b5fef,#8b5cf6);border-color:transparent;color:#fff;box-shadow:0 4px 20px rgba(91,95,239,0.4);}
+  .tab-btn.active-sales{background:linear-gradient(135deg,#059669,#34d399);border-color:transparent;color:#fff;box-shadow:0 4px 20px rgba(52,211,153,0.35);}
+  .header{text-align:center;margin-bottom:36px;}
+  .eyebrow{display:inline-block;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:0.34em;font-weight:500;color:var(--accent);margin-bottom:14px;background:rgba(108,126,248,0.1);padding:5px 16px;border-radius:999px;border:1px solid rgba(108,126,248,0.24);}
+  .eyebrow-green{color:#34d399;background:rgba(52,211,153,0.08);border-color:rgba(52,211,153,0.2);}
+  h1{font-size:clamp(22px,4vw,40px);font-weight:900;letter-spacing:-0.025em;background:linear-gradient(128deg,#e8eef8 20%,#818cf8 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:10px;}
+  h1.green{background:linear-gradient(128deg,#e8eef8 20%,#34d399 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
   .sub{color:var(--muted);font-size:13px;}
   .input-row{display:flex;gap:10px;max-width:600px;margin:0 auto 10px;}
-  input[type=text]{
-    flex:1; padding:14px 18px; border-radius:11px; font-size:14px;
-    background:rgba(255,255,255,0.055); border:1px solid rgba(255,255,255,0.11);
-    color:var(--text); outline:none; font-family:inherit;
-    transition:border-color 0.2s,box-shadow 0.2s;
-  }
+  input[type=text]{flex:1;padding:14px 18px;border-radius:11px;font-size:14px;background:rgba(255,255,255,0.055);border:1px solid rgba(255,255,255,0.11);color:var(--text);outline:none;font-family:inherit;transition:border-color 0.2s,box-shadow 0.2s;}
   input[type=text]:focus{border-color:rgba(108,126,248,0.55);box-shadow:0 0 0 3px rgba(108,126,248,0.1);}
   input::placeholder{color:rgba(148,163,184,0.35);}
   .hint{text-align:center;font-size:11px;color:rgba(148,163,184,0.4);margin-bottom:40px;}
-  .btn{
-    padding:14px 28px; border-radius:11px; font-size:13px; font-weight:700;
-    background:linear-gradient(135deg,#5b5fef,#8b5cf6);
-    border:none; color:#fff; cursor:pointer; white-space:nowrap;
-    box-shadow:0 4px 22px rgba(91,95,239,0.45);
-    transition:opacity 0.2s; font-family:inherit;
-  }
+  .btn{padding:14px 28px;border-radius:11px;font-size:13px;font-weight:700;background:linear-gradient(135deg,#5b5fef,#8b5cf6);border:none;color:#fff;cursor:pointer;white-space:nowrap;box-shadow:0 4px 22px rgba(91,95,239,0.45);transition:opacity 0.2s;font-family:inherit;}
   .btn:hover:not(:disabled){opacity:0.88;}
   .btn:disabled{background:rgba(108,126,248,0.25);box-shadow:none;cursor:not-allowed;}
   .loading{display:none;text-align:center;padding:64px 0;}
   @keyframes spin{to{transform:rotate(360deg);}}
-  .spinner{
-    width:46px;height:46px;border-radius:50%;
-    border:3px solid rgba(108,126,248,0.18);border-top-color:var(--accent);
-    animation:spin 0.75s linear infinite;margin:0 auto 18px;
-  }
+  .spinner{width:46px;height:46px;border-radius:50%;border:3px solid rgba(108,126,248,0.18);border-top-color:var(--accent);animation:spin 0.75s linear infinite;margin:0 auto 18px;}
+  .spinner-green{border-color:rgba(52,211,153,0.18);border-top-color:#34d399;}
   .loading p{color:var(--muted);font-size:13px;}
   .error{display:none;text-align:center;color:#ef4444;font-size:12px;padding:16px;line-height:1.6;}
   .result{display:none;}
-  .company-card{text-align:center;margin-bottom:32px;animation:fadeUp 0.5s ease both;}
   @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+  .company-card{text-align:center;margin-bottom:32px;animation:fadeUp 0.5s ease both;}
   .co-name{font-size:22px;font-weight:900;color:#f1f5f9;margin-bottom:5px;}
   .co-industry{font-size:11px;color:var(--accent);letter-spacing:0.12em;margin-bottom:8px;font-family:'DM Mono',monospace;}
   .co-overview{font-size:12.5px;color:var(--muted);max-width:480px;margin:0 auto;line-height:1.7;}
@@ -82,13 +48,7 @@
   .axis-y{display:flex;flex-direction:column;justify-content:space-around;padding-right:10px;min-width:42px;}
   .axis-y span{font-size:9px;color:rgba(148,163,184,0.3);writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;font-family:'DM Mono',monospace;}
   .matrix-grid{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:13px;}
-  .qcard{
-    background:var(--surface);border:1px solid var(--border);
-    border-radius:14px;padding:20px;backdrop-filter:blur(18px);
-    display:flex;flex-direction:column;gap:11px;
-    opacity:0;transform:translateY(16px);
-    transition:opacity 0.42s ease,transform 0.42s ease;
-  }
+  .qcard{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;backdrop-filter:blur(18px);display:flex;flex-direction:column;gap:11px;opacity:0;transform:translateY(16px);transition:opacity 0.42s ease,transform 0.42s ease;}
   .qcard.show{opacity:1;transform:translateY(0);}
   .qcard:hover{border-color:rgba(255,255,255,0.14);}
   .qcard-top{display:flex;justify-content:space-between;align-items:flex-start;}
@@ -108,48 +68,138 @@
   .rec.show{opacity:1;}
   .rec-label{font-size:10px;font-weight:800;color:var(--accent);letter-spacing:0.2em;margin-bottom:8px;font-family:'DM Mono',monospace;}
   .rec-text{font-size:13px;color:rgba(203,213,225,0.9);line-height:1.9;}
-  @media(max-width:640px){.matrix-grid{grid-template-columns:1fr;}.axis-y{display:none;}}
+  .drop-zone{max-width:600px;margin:0 auto 20px;border:2px dashed rgba(52,211,153,0.3);border-radius:14px;padding:40px 24px;text-align:center;background:rgba(52,211,153,0.04);cursor:pointer;transition:all 0.2s;}
+  .drop-zone:hover,.drop-zone.drag-over{border-color:rgba(52,211,153,0.7);background:rgba(52,211,153,0.08);}
+  .drop-icon{font-size:34px;margin-bottom:10px;}
+  .drop-text{font-size:13px;color:rgba(148,163,184,0.7);line-height:1.8;}
+  .drop-text strong{color:#34d399;}
+  .file-input{display:none;}
+  .file-info{max-width:600px;margin:0 auto 14px;padding:12px 16px;border-radius:10px;background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.2);font-size:12px;color:#34d399;display:none;align-items:center;gap:8px;}
+  .csv-preview{max-width:600px;margin:0 auto 16px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:10px;overflow:hidden;display:none;}
+  .csv-preview-header{padding:8px 14px;background:rgba(255,255,255,0.04);font-size:11px;color:var(--muted);font-family:'DM Mono',monospace;border-bottom:1px solid rgba(255,255,255,0.06);}
+  .csv-preview table{width:100%;border-collapse:collapse;font-size:11px;}
+  .csv-preview th{padding:7px 12px;text-align:left;color:var(--accent);font-weight:700;background:rgba(108,126,248,0.05);border-bottom:1px solid rgba(255,255,255,0.06);}
+  .csv-preview td{padding:7px 12px;color:rgba(203,213,225,0.8);border-bottom:1px solid rgba(255,255,255,0.04);}
+  .csv-preview tr:last-child td{border-bottom:none;}
+  .analyze-btn-wrap{text-align:center;margin:20px 0 40px;}
+  .btn-green{padding:14px 40px;border-radius:11px;font-size:14px;font-weight:700;background:linear-gradient(135deg,#059669,#34d399);border:none;color:#fff;cursor:pointer;box-shadow:0 4px 22px rgba(52,211,153,0.3);transition:opacity 0.2s;font-family:inherit;}
+  .btn-green:hover:not(:disabled){opacity:0.88;}
+  .btn-green:disabled{background:rgba(52,211,153,0.2);box-shadow:none;cursor:not-allowed;}
+  .sales-result{display:none;}
+  .sales-matrix-title{font-size:18px;font-weight:800;color:#f1f5f9;margin-bottom:20px;text-align:center;}
+  .matrix-table-wrap{overflow-x:auto;margin-bottom:40px;}
+  .matrix-table{width:100%;border-collapse:collapse;border:1px solid rgba(255,255,255,0.1);}
+  .matrix-table th,.matrix-table td{border:1px solid rgba(255,255,255,0.08);padding:14px 16px;vertical-align:top;}
+  .col-header{text-align:center;font-size:11px;font-weight:800;letter-spacing:0.1em;padding:10px;}
+  .row-header{text-align:center;font-size:11px;font-weight:800;letter-spacing:0.1em;writing-mode:vertical-rl;transform:rotate(180deg);width:36px;padding:10px 6px;}
+  .cell-q1{background:rgba(56,189,248,0.05);}
+  .cell-q2{background:rgba(167,139,250,0.05);}
+  .cell-q3{background:rgba(52,211,153,0.05);}
+  .cell-q4{background:rgba(251,146,60,0.05);}
+  .cell-title{font-size:13px;font-weight:800;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,0.06);}
+  .cell-section{margin-bottom:10px;}
+  .cell-section-label{font-size:9px;font-weight:800;letter-spacing:0.14em;margin-bottom:5px;font-family:'DM Mono',monospace;opacity:0.7;}
+  .cell-section-content{font-size:11px;color:rgba(203,213,225,0.85);line-height:1.7;}
+  .method-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;}
+  .method-tag{font-size:10px;padding:2px 8px;border-radius:999px;font-weight:600;background:rgba(108,126,248,0.15);color:#818cf8;border:1px solid rgba(108,126,248,0.25);}
+  .companies-title{font-size:16px;font-weight:800;color:#f1f5f9;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid rgba(255,255,255,0.06);}
+  .ccs{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:14px;opacity:0;transform:translateY(10px);transition:all 0.35s ease;}
+  .ccs.show{opacity:1;transform:translateY(0);}
+  .ccs-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+  .ccs-name{font-size:15px;font-weight:800;color:#f1f5f9;}
+  .ccs-meta{font-size:11px;color:var(--muted);margin-top:3px;}
+  .quad-badge{font-size:10px;padding:4px 12px;border-radius:999px;font-weight:700;white-space:nowrap;}
+  .ccs-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+  .ccs-box{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:9px;padding:11px 13px;}
+  .ccs-box-label{font-size:9px;font-weight:800;color:var(--accent);letter-spacing:0.12em;margin-bottom:5px;font-family:'DM Mono',monospace;}
+  .ccs-box-content{font-size:11px;color:rgba(203,213,225,0.85);line-height:1.65;}
+  @media(max-width:640px){.matrix-grid{grid-template-columns:1fr;}.axis-y{display:none;}.ccs-grid{grid-template-columns:1fr;}.tab-btn{padding:10px 18px;font-size:12px;}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="header">
-    <div class="eyebrow">STRATEGIC GROWTH ANALYSIS</div>
-    <h1>アンゾフ成長戦略マトリクス</h1>
-    <p class="sub">企業のURLまたは企業名を入力して、AIによる四象限戦略分析を生成します</p>
+  <div class="tab-bar">
+    <button class="tab-btn active-mgmt" id="tabMgmt" onclick="switchTab('mgmt')">📊 経営戦略</button>
+    <button class="tab-btn" id="tabSales" onclick="switchTab('sales')">🎯 営業戦略</button>
   </div>
 
-  <div class="input-row">
-    <input type="text" id="inp" placeholder="例：https://toyota.jp　または　トヨタ自動車" />
-    <button class="btn" id="btn" onclick="analyze()">分析する</button>
-  </div>
-  <p class="hint">URLまたは企業名どちらでも入力できます</p>
-
-  <div class="loading" id="loading">
-    <div class="spinner"></div>
-    <p id="loadingMsg">分析中...</p>
-  </div>
-  <div class="error" id="error"></div>
-
-  <div class="result" id="result">
-    <div class="company-card">
-      <div class="co-name" id="coName"></div>
-      <div class="co-industry" id="coIndustry"></div>
-      <div class="co-overview" id="coOverview"></div>
+  <!-- 経営戦略 -->
+  <div id="pageMgmt">
+    <div class="header">
+      <div class="eyebrow">STRATEGIC GROWTH ANALYSIS</div>
+      <h1>アンゾフ成長戦略マトリクス</h1>
+      <p class="sub">企業のURLまたは企業名を入力して、AIによる四象限戦略分析を生成します</p>
     </div>
-    <div class="axis-x"><span>← 既存市場</span><span>新規市場 →</span></div>
-    <div class="matrix-wrap">
-      <div class="axis-y"><span>新規製品 ↑</span><span>↓ 既存製品</span></div>
-      <div class="matrix-grid" id="grid"></div>
+    <div class="input-row">
+      <input type="text" id="inp" placeholder="例：https://toyota.jp　または　トヨタ自動車" />
+      <button class="btn" id="btn" onclick="analyze()">分析する</button>
     </div>
-    <div class="rec" id="rec">
-      <div class="rec-label">▸ 総合戦略提言</div>
-      <div class="rec-text" id="recText"></div>
+    <p class="hint">URLまたは企業名どちらでも入力できます</p>
+    <div class="loading" id="loading"><div class="spinner"></div><p id="loadingMsg">分析中...</p></div>
+    <div class="error" id="error"></div>
+    <div class="result" id="result">
+      <div class="company-card">
+        <div class="co-name" id="coName"></div>
+        <div class="co-industry" id="coIndustry"></div>
+        <div class="co-overview" id="coOverview"></div>
+      </div>
+      <div class="axis-x"><span>← 既存市場</span><span>新規市場 →</span></div>
+      <div class="matrix-wrap">
+        <div class="axis-y"><span>新規製品 ↑</span><span>↓ 既存製品</span></div>
+        <div class="matrix-grid" id="grid"></div>
+      </div>
+      <div class="rec" id="rec">
+        <div class="rec-label">▸ 総合戦略提言</div>
+        <div class="rec-text" id="recText"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 営業戦略 -->
+  <div id="pageSales" style="display:none;">
+    <div class="header">
+      <div class="eyebrow eyebrow-green">SALES STRATEGY MATRIX</div>
+      <h1 class="green">営業戦略マトリクス</h1>
+      <p class="sub">CSVで企業リストをアップロードして、各象限ごとの営業戦略を自動生成します</p>
+    </div>
+    <div class="drop-zone" id="dropZone" onclick="document.getElementById('fileInput').click()">
+      <div class="drop-icon">📂</div>
+      <div class="drop-text">
+        <strong>CSVファイルをドラッグ＆ドロップ</strong><br>
+        またはクリックしてファイルを選択<br>
+        <span style="font-size:10px;opacity:0.55">企業名・業種・エリア・従業員数・売上などの列を含むCSV</span>
+      </div>
+      <input type="file" id="fileInput" class="file-input" accept=".csv">
+    </div>
+    <div class="file-info" id="fileInfo">📄 <span id="fileName"></span>　<span id="rowCount"></span>件の企業データを読み込みました</div>
+    <div class="csv-preview" id="csvPreview">
+      <div class="csv-preview-header">プレビュー（先頭5件）</div>
+      <div id="csvTable"></div>
+    </div>
+    <div class="analyze-btn-wrap">
+      <button class="btn-green" id="salesBtn" onclick="analyzeSales()" disabled>🚀 営業戦略を生成する</button>
+    </div>
+    <div class="loading" id="salesLoading"><div class="spinner spinner-green"></div><p id="salesLoadingMsg">営業戦略を生成中...</p></div>
+    <div class="error" id="salesError"></div>
+    <div class="sales-result" id="salesResult">
+      <div class="sales-matrix-title">📊 象限別 営業戦略マトリクス</div>
+      <div class="matrix-table-wrap"><table class="matrix-table" id="matrixTable"></table></div>
+      <div class="companies-title">🏢 企業別 営業戦略プラン</div>
+      <div id="companyList"></div>
     </div>
   </div>
 </div>
 
 <script>
+function switchTab(tab){
+  const isMgmt=tab==='mgmt';
+  document.getElementById('pageMgmt').style.display=isMgmt?'':'none';
+  document.getElementById('pageSales').style.display=isMgmt?'none':'';
+  document.getElementById('tabMgmt').className='tab-btn'+(isMgmt?' active-mgmt':'');
+  document.getElementById('tabSales').className='tab-btn'+(!isMgmt?' active-sales':'');
+}
+
+// 経営戦略
 const QUADS=[
   {key:"marketDevelopment",label:"③ 市場開発戦略",accent:"#34d399"},
   {key:"diversification",label:"④ 多角化戦略",accent:"#fb923c"},
@@ -163,107 +213,135 @@ function priStyle(p){
 }
 function riskColor(r){return r==="高"?"#ef4444":r==="中"?"#f59e0b":"#22c55e";}
 function isValidUrl(s){try{new URL(s);return true;}catch{return false;}}
-function showError(msg){const el=document.getElementById("error");el.textContent=msg;el.style.display="block";}
-
 document.getElementById("inp").addEventListener("keydown",e=>{if(e.key==="Enter")analyze();});
-
 async function fetchSiteText(url){
   try{
-    const proxy="https://api.allorigins.win/get?url="+encodeURIComponent(url);
-    const r=await fetch(proxy,{signal:AbortSignal.timeout(8000)});
+    const r=await fetch("https://api.allorigins.win/get?url="+encodeURIComponent(url),{signal:AbortSignal.timeout(8000)});
     const data=await r.json();
     if(!data.contents)return null;
     return data.contents.replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim().slice(0,3000);
   }catch{return null;}
 }
-
 async function analyze(){
-  const input=document.getElementById("inp").value.trim();
-  if(!input)return;
-  const btn=document.getElementById("btn");
-  btn.disabled=true;
+  const input=document.getElementById("inp").value.trim();if(!input)return;
+  const btn=document.getElementById("btn");btn.disabled=true;
   document.getElementById("error").style.display="none";
   document.getElementById("result").style.display="none";
   const loading=document.getElementById("loading");
   const loadingMsg=document.getElementById("loadingMsg");
   loading.style.display="block";
-
   let userContent="";
   if(isValidUrl(input)){
     loadingMsg.textContent="サイト情報を取得中...";
     const siteText=await fetchSiteText(input);
-    if(siteText){
-      userContent="URL: "+input+"\n\nサイトから取得したテキスト:\n"+siteText;
-      loadingMsg.textContent="戦略を分析中...";
-    }else{
-      userContent="URL: "+input+"\n\nサイト情報の取得に失敗したため、URLのドメイン名や企業の知識から分析してください。";
-      loadingMsg.textContent="URLから企業を特定して分析中...";
-    }
+    userContent=siteText?"URL: "+input+"\n\nサイトから取得したテキスト:\n"+siteText:"URL: "+input+"\n\nサイト情報の取得に失敗。URLのドメインから企業を特定して分析してください。";
+    loadingMsg.textContent="戦略を分析中...";
   }else{
     loadingMsg.textContent=input+" の戦略を分析中...";
     userContent="企業名: "+input;
   }
-
   try{
-    const res=await fetch("/api/analyze",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
-      body:JSON.stringify({userContent})
-    });
+    const res=await fetch("/api/analyze",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userContent})});
     const d=await res.json();
     if(d.error)throw new Error(d.error);
-    render(d);
+    renderMgmt(d);
   }catch(e){
-    showError("分析に失敗しました: "+e.message);
-  }finally{
-    loading.style.display="none";
-    btn.disabled=false;
-  }
+    const el=document.getElementById("error");el.textContent="分析に失敗しました: "+e.message;el.style.display="block";
+  }finally{loading.style.display="none";btn.disabled=false;}
 }
-
-function render(d){
+function renderMgmt(d){
   document.getElementById("coName").textContent=d.companyName;
   document.getElementById("coIndustry").textContent=d.industry;
   document.getElementById("coOverview").textContent=d.companyOverview;
-  const grid=document.getElementById("grid");
-  grid.innerHTML="";
+  const grid=document.getElementById("grid");grid.innerHTML="";
   QUADS.forEach((q,i)=>{
     const qd=d[q.key];if(!qd)return;
     const rc=riskColor(qd.risk);
-    const card=document.createElement("div");
-    card.className="qcard";
-    card.style.transitionDelay=(i*75)+"ms";
-    card.style.borderColor=q.accent+"28";
-    card.innerHTML=`
-      <div class="qcard-top">
-        <div>
-          <div class="qcard-label" style="color:${q.accent}">${q.label}</div>
-          <div class="qcard-title">${qd.title}</div>
-          <div class="qcard-subtitle">${qd.subtitle}</div>
-        </div>
-        <div class="risk-tag" style="background:${rc}20;color:${rc};border:1px solid ${rc}40">リスク ${qd.risk}</div>
-      </div>
-      <div class="strategies">
-        ${qd.strategies.map(s=>`
-          <div class="strat">
-            <div class="strat-top">
-              <span class="strat-title">${s.title}</span>
-              <span class="pri-tag" style="${priStyle(s.priority)}">${s.priority}</span>
-            </div>
-            <div class="strat-desc">${s.description}</div>
-          </div>`).join("")}
-      </div>
-      <div class="kpi" style="background:${q.accent}10;border-left-color:${q.accent}">
-        <strong style="color:${q.accent}">KPI: </strong>${qd.keyMetric}
-      </div>`;
+    const card=document.createElement("div");card.className="qcard";card.style.transitionDelay=(i*75)+"ms";card.style.borderColor=q.accent+"28";
+    card.innerHTML=`<div class="qcard-top"><div><div class="qcard-label" style="color:${q.accent}">${q.label}</div><div class="qcard-title">${qd.title}</div><div class="qcard-subtitle">${qd.subtitle}</div></div><div class="risk-tag" style="background:${rc}20;color:${rc};border:1px solid ${rc}40">リスク ${qd.risk}</div></div><div class="strategies">${qd.strategies.map(s=>`<div class="strat"><div class="strat-top"><span class="strat-title">${s.title}</span><span class="pri-tag" style="${priStyle(s.priority)}">${s.priority}</span></div><div class="strat-desc">${s.description}</div></div>`).join("")}</div><div class="kpi" style="background:${q.accent}10;border-left-color:${q.accent}"><strong style="color:${q.accent}">KPI: </strong>${qd.keyMetric}</div>`;
     grid.appendChild(card);
   });
   document.getElementById("recText").textContent=d.overallRecommendation;
   document.getElementById("result").style.display="block";
-  setTimeout(()=>{
-    document.querySelectorAll(".qcard").forEach(c=>c.classList.add("show"));
-    document.getElementById("rec").classList.add("show");
-  },60);
+  setTimeout(()=>{document.querySelectorAll(".qcard").forEach(c=>c.classList.add("show"));document.getElementById("rec").classList.add("show");},60);
+}
+
+// 営業戦略 CSV
+let csvData=[],csvHeaders=[];
+const dropZone=document.getElementById("dropZone");
+const fileInput=document.getElementById("fileInput");
+dropZone.addEventListener("dragover",e=>{e.preventDefault();dropZone.classList.add("drag-over");});
+dropZone.addEventListener("dragleave",()=>dropZone.classList.remove("drag-over"));
+dropZone.addEventListener("drop",e=>{e.preventDefault();dropZone.classList.remove("drag-over");const f=e.dataTransfer.files[0];if(f&&f.name.endsWith(".csv"))loadCSV(f);});
+fileInput.addEventListener("change",e=>{if(e.target.files[0])loadCSV(e.target.files[0]);});
+
+function loadCSV(file){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const lines=e.target.result.trim().split("\n").map(l=>l.split(",").map(c=>c.trim().replace(/^"|"$/g,"")));
+    if(lines.length<2)return;
+    csvHeaders=lines[0];
+    csvData=lines.slice(1).filter(r=>r.some(c=>c));
+    document.getElementById("fileName").textContent=file.name;
+    document.getElementById("rowCount").textContent=csvData.length;
+    document.getElementById("fileInfo").style.display="flex";
+    const previewRows=csvData.slice(0,5);
+    document.getElementById("csvTable").innerHTML=`<table><tr>${csvHeaders.map(h=>`<th>${h}</th>`).join("")}</tr>${previewRows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join("")}</tr>`).join("")}</table>`;
+    document.getElementById("csvPreview").style.display="block";
+    document.getElementById("salesBtn").disabled=false;
+  };
+  reader.readAsText(file,"UTF-8");
+}
+
+async function analyzeSales(){
+  if(!csvData.length)return;
+  const btn=document.getElementById("salesBtn");btn.disabled=true;
+  document.getElementById("salesError").style.display="none";
+  document.getElementById("salesResult").style.display="none";
+  const loading=document.getElementById("salesLoading");loading.style.display="block";
+
+  const csvText=csvHeaders.join(",")+"\n"+csvData.map(r=>r.join(",")).join("\n");
+  const prompt=`以下のCSVデータに含まれる企業リストを分析して、アンゾフマトリクスの4象限（①市場浸透・②製品開発・③市場開発・④多角化）に各企業を分類し、象限別の営業戦略と企業別の具体的な営業プランを生成してください。
+
+CSVデータ:
+${csvText}
+
+以下のJSON形式のみで出力（マークダウン記号・余計なテキスト不要）:
+{"quadrants":{"marketPenetration":{"title":"① 市場浸透","color":"#38bdf8","companies":[],"salesMethods":["電話","メール"],"targetSegment":"ターゲット説明","approach":"切り口説明"},"productDevelopment":{"title":"② 製品開発","color":"#a78bfa","companies":[],"salesMethods":[],"targetSegment":"","approach":""},"marketDevelopment":{"title":"③ 市場開発","color":"#34d399","companies":[],"salesMethods":[],"targetSegment":"","approach":""},"diversification":{"title":"④ 多角化","color":"#fb923c","companies":[],"salesMethods":[],"targetSegment":"","approach":""}},"companies":[{"name":"企業名","meta":"業種・エリア・従業員数など","quadrant":"marketPenetration","salesMethods":"具体的な営業手法と内容","targetPlan":"この企業へのターゲット戦略","approach":"売上向上訴求、コストダウン訴求、ブランディング向上訴求など複数の切り口"}]}`;
+
+  try{
+    const res=await fetch("/api/analyze",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userContent:prompt})});
+    const d=await res.json();
+    if(d.error)throw new Error(d.error);
+    renderSales(d);
+  }catch(e){
+    const el=document.getElementById("salesError");el.textContent="生成に失敗しました: "+e.message;el.style.display="block";
+  }finally{loading.style.display="none";btn.disabled=false;}
+}
+
+function renderQCell(q,cls){
+  if(!q)return`<td class="${cls}"></td>`;
+  const methods=(q.salesMethods||[]).map(m=>`<span class="method-tag">${m}</span>`).join("");
+  return`<td class="${cls}"><div class="cell-title" style="color:${q.color||'#e8eef8'}">${q.title||""}</div>${q.companies&&q.companies.length?`<div class="cell-section"><div class="cell-section-label">対象企業</div><div class="cell-section-content">${q.companies.join("、")}</div></div>`:""}<div class="cell-section"><div class="cell-section-label">営業手法</div><div class="method-tags">${methods}</div></div><div class="cell-section"><div class="cell-section-label">ターゲット案</div><div class="cell-section-content">${q.targetSegment||""}</div></div><div class="cell-section"><div class="cell-section-label">切り口</div><div class="cell-section-content">${q.approach||""}</div></div></td>`;
+}
+
+function renderSales(d){
+  const table=document.getElementById("matrixTable");
+  const qs=d.quadrants||{};
+  table.innerHTML=`<tr><th style="background:rgba(255,255,255,0.02)"></th><th class="col-header" style="color:#a78bfa;background:rgba(167,139,250,0.06)">既存製品</th><th class="col-header" style="color:#fb923c;background:rgba(251,146,60,0.06)">新規製品</th></tr><tr><td class="row-header" style="color:#38bdf8;background:rgba(56,189,248,0.06)">既存市場</td>${renderQCell(qs.marketPenetration,"cell-q1")}${renderQCell(qs.productDevelopment,"cell-q2")}</tr><tr><td class="row-header" style="color:#34d399;background:rgba(52,211,153,0.06)">新規市場</td>${renderQCell(qs.marketDevelopment,"cell-q3")}${renderQCell(qs.diversification,"cell-q4")}</tr>`;
+
+  const list=document.getElementById("companyList");list.innerHTML="";
+  const qColors={marketPenetration:"#38bdf8",productDevelopment:"#a78bfa",marketDevelopment:"#34d399",diversification:"#fb923c"};
+  const qNames={marketPenetration:"① 市場浸透",productDevelopment:"② 製品開発",marketDevelopment:"③ 市場開発",diversification:"④ 多角化"};
+  (d.companies||[]).forEach((c,i)=>{
+    const color=qColors[c.quadrant]||"#6c7ef8";
+    const qName=qNames[c.quadrant]||c.quadrant;
+    const card=document.createElement("div");card.className="ccs";card.style.transitionDelay=(i*60)+"ms";card.style.borderColor=color+"28";
+    card.innerHTML=`<div class="ccs-header"><div><div class="ccs-name">${c.name}</div><div class="ccs-meta">${c.meta||""}</div></div><div class="quad-badge" style="background:${color}18;color:${color};border:1px solid ${color}35">${qName}</div></div><div class="ccs-grid"><div class="ccs-box"><div class="ccs-box-label">📞 営業手法</div><div class="ccs-box-content">${c.salesMethods||""}</div></div><div class="ccs-box"><div class="ccs-box-label">🎯 ターゲット案</div><div class="ccs-box-content">${c.targetPlan||""}</div></div><div class="ccs-box"><div class="ccs-box-label">💡 切り口</div><div class="ccs-box-content">${c.approach||""}</div></div></div>`;
+    list.appendChild(card);
+  });
+  document.getElementById("salesResult").style.display="block";
+  setTimeout(()=>document.querySelectorAll(".ccs").forEach(c=>c.classList.add("show")),60);
 }
 </script>
 </body>
