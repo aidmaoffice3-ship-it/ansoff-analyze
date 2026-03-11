@@ -165,20 +165,22 @@
     <div class="loading" id="sLoading"><div class="spinner spinner-green"></div><p id="sLoadingMsg">分析中...</p></div>
     <div class="error" id="sError"></div>
     <div class="sales-result" id="salesResult">
-      <div class="s-company-card">
-        <div class="s-co-name" id="sCoName"></div>
-        <div class="s-co-industry" id="sCoIndustry"></div>
-        <div class="s-co-overview" id="sCoOverview"></div>
-      </div>
-      <div class="sales-matrix-label">▸ ANSOFF SALES STRATEGY MATRIX</div>
-      <div class="s-axis-x"><span>← 既存製品</span><span>新規製品 →</span></div>
-      <div class="s-matrix-wrap">
-        <div class="s-axis-y"><span>新規市場 ↑</span><span>↓ 既存市場</span></div>
-        <div class="s-matrix-grid" id="sGrid"></div>
-      </div>
-      <div class="s-rec" id="sRec">
-        <div class="s-rec-label">▸ 営業戦略 総合提言</div>
-        <div class="s-rec-text" id="sRecText"></div>
+      <div id="pdfArea">
+        <div class="s-company-card">
+          <div class="s-co-name" id="sCoName"></div>
+          <div class="s-co-industry" id="sCoIndustry"></div>
+          <div class="s-co-overview" id="sCoOverview"></div>
+        </div>
+        <div class="s-rec" id="sRec">
+          <div class="s-rec-label">▸ 営業戦略 総合提言</div>
+          <div class="s-rec-text" id="sRecText"></div>
+        </div>
+        <div class="sales-matrix-label" style="margin-top:28px;">▸ ANSOFF SALES STRATEGY MATRIX</div>
+        <div class="s-axis-x"><span>← 既存製品</span><span>新規製品 →</span></div>
+        <div class="s-matrix-wrap">
+          <div class="s-axis-y"><span>新規市場 ↑</span><span>↓ 既存市場</span></div>
+          <div class="s-matrix-grid" id="sGrid"></div>
+        </div>
       </div>
       <div style="text-align:center;margin-top:32px;">
         <button class="btn-pdf" id="pdfBtn" onclick="downloadPDF()">📄 PDFでダウンロード</button>
@@ -187,7 +189,8 @@
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 function switchTab(tab){
   const isMgmt=tab==='mgmt';
@@ -401,43 +404,69 @@ function renderSales(d){
   const btn=document.getElementById("pdfBtn");
   btn.textContent="⏳ 生成中...";btn.disabled=true;
   const companyName=document.getElementById("sCoName").textContent||"営業戦略";
-  const el=document.getElementById("salesResult");
+  const el=document.getElementById("pdfArea");
 
   // PDF用スタイル上書き
   const style=document.createElement("style");
   style.id="pdf-override";
   style.textContent=`
-    #salesResult{background:#04091a;color:#e8eef8;padding:20px;}
-    .sqcard{break-inside:avoid;page-break-inside:avoid;background:#0a1432;border:1px solid rgba(255,255,255,0.12);border-radius:10px;padding:16px;margin-bottom:12px;}
-    .sqcard-section{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 12px;margin-bottom:8px;}
-    .method-tag{background:rgba(108,126,248,0.2);color:#818cf8;border:1px solid rgba(108,126,248,0.3);border-radius:999px;padding:2px 8px;font-size:10px;margin:2px;display:inline-block;}
-    .s-matrix-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-    .s-rec{background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.25);border-radius:10px;padding:16px;margin-top:16px;}
-    body::before{display:none;}
+    #pdfArea{background:#04091a;color:#e8eef8;padding:24px;width:1200px;}
+    .s-company-card{text-align:center;margin-bottom:20px;}
+    .s-co-name{font-size:22px;font-weight:900;color:#f1f5f9;margin-bottom:4px;}
+    .s-co-industry{font-size:11px;color:#34d399;margin-bottom:6px;}
+    .s-co-overview{font-size:12px;color:rgba(148,163,184,0.8);max-width:500px;margin:0 auto;line-height:1.6;}
+    .s-rec{background:rgba(52,211,153,0.08);border:1px solid rgba(52,211,153,0.25);border-radius:10px;padding:16px;margin-bottom:20px;opacity:1!important;}
+    .s-rec-label{font-size:10px;font-weight:800;color:#34d399;letter-spacing:0.2em;margin-bottom:6px;}
+    .s-rec-text{font-size:12px;color:rgba(203,213,225,0.9);line-height:1.8;}
+    .sales-matrix-label{text-align:center;font-size:10px;font-weight:800;color:#34d399;letter-spacing:0.2em;margin-bottom:12px;}
+    .s-axis-x{display:flex;justify-content:space-between;padding:0 8px;margin-bottom:4px;font-size:9px;color:rgba(148,163,184,0.4);}
+    .s-matrix-wrap{display:flex;}
+    .s-axis-y{display:flex;flex-direction:column;justify-content:space-around;padding-right:8px;min-width:36px;font-size:9px;color:rgba(148,163,184,0.4);}
+    .s-axis-y span{writing-mode:vertical-rl;transform:rotate(180deg);text-align:center;}
+    .s-matrix-grid{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+    .sqcard{background:#0a1432;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:14px;opacity:1!important;transform:none!important;}
+    .sqcard-head{margin-bottom:10px;}
+    .sqcard-label{font-size:9px;font-weight:800;letter-spacing:0.16em;margin-bottom:3px;}
+    .sqcard-subtitle{font-size:10px;color:rgba(148,163,184,0.6);}
+    .sqcard-section{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:7px;padding:8px 10px;margin-bottom:6px;}
+    .sqcard-section-label{font-size:8px;font-weight:800;letter-spacing:0.14em;margin-bottom:4px;opacity:0.8;}
+    .sqcard-section-content{font-size:10px;color:rgba(203,213,225,0.85);line-height:1.65;}
+    .method-tags{display:flex;flex-wrap:wrap;gap:3px;margin-top:3px;}
+    .method-tag{font-size:9px;padding:2px 6px;border-radius:999px;font-weight:600;background:rgba(108,126,248,0.15);color:#818cf8;border:1px solid rgba(108,126,248,0.3);}
+    ul{padding-left:14px;font-size:10px;color:rgba(203,213,225,0.85);line-height:1.7;}
+    body::before{display:none!important;}
   `;
   document.head.appendChild(style);
 
-  // コンテンツの高さに合わせたカスタムページサイズで1枚に収める
-  const width=el.scrollWidth;
-  const height=el.scrollHeight;
-  const mmW=Math.ceil(width*0.2646);
-  const mmH=Math.ceil(height*0.2646)+20;
+  // 固定幅でキャプチャしてから1ページPDFに
+  const origStyle=el.getAttribute("style")||"";
+  el.style.width="1200px";
+  el.style.minWidth="1200px";
 
-  const opt={
-    margin:[10,10,10,10],
-    filename:`${companyName}_営業戦略マトリクス.pdf`,
-    image:{type:"jpeg",quality:0.97},
-    html2canvas:{scale:2,backgroundColor:"#04091a",useCORS:true,logging:false,scrollY:0,windowWidth:width},
-    jsPDF:{unit:"mm",format:[mmW,mmH],orientation:"portrait"},
-    pagebreak:{mode:[]}
-  };
+  await new Promise(r=>setTimeout(r,100));
 
-  try{
-    await html2pdf().set(opt).from(el).save();
-  }finally{
-    document.getElementById("pdf-override")?.remove();
-    btn.textContent="📄 PDFでダウンロード";btn.disabled=false;
-  }
+  const canvas=await html2canvas(el,{
+    scale:1.5,
+    backgroundColor:"#04091a",
+    useCORS:true,
+    logging:false,
+    scrollY:0,
+    width:1200,
+    windowWidth:1200
+  });
+
+  el.setAttribute("style",origStyle);
+  document.getElementById("pdf-override")?.remove();
+
+  const imgData=canvas.toDataURL("image/jpeg",0.95);
+  const {jsPDF}=window.jspdf;
+  const mmW=297; // A4横
+  const mmH=Math.ceil(canvas.height/canvas.width*mmW);
+  const pdf=new jsPDF({orientation:"landscape",unit:"mm",format:[mmW,mmH]});
+  pdf.addImage(imgData,"JPEG",0,0,mmW,mmH);
+  pdf.save(`${companyName}_営業戦略マトリクス.pdf`);
+
+  btn.textContent="📄 PDFでダウンロード";btn.disabled=false;
 }
 </script>
 </body>
